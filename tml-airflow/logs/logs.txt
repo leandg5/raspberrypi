@@ -8165,3 +8165,4 @@ origin	https://<personal access token hidden>@github.com/leandg5/raspberrypi.git
 [INFO 2024-11-07_01:39:47] Deleting topic iot-preprocess in tml_system_step_2_kafka_createtopic_dag-mysecondTMLsolutionproject-389d.py
 [INFO 2024-11-07_01:39:53] Deleting topic iot-preprocess2 in tml_system_step_2_kafka_createtopic_dag-mysecondTMLsolutionproject-389d.py
 [INFO 2024-11-07_01:40:03] Deleting topic ml-data in tml_system_step_2_kafka_createtopic_dag-mysecondTMLsolutionproject-389d.py
+[INFO 2024-11-07_01:40:11] Deleting topic prediction-data in tml_system_step_2_kafka_createtopic_dag-mysecondTMLsolutionproject-389d.py
