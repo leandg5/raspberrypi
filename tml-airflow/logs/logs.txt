@@ -8180,3 +8180,4 @@ origin	https://<personal access token hidden>@github.com/leandg5/raspberrypi.git
 [INFO 2024-11-07_02:36:50] Deleting topic cisco-network-privategpt in tml_system_step_2_kafka_createtopic_dag-mysecondTMLsolutionproject-389d.py
 [INFO 2024-11-07_02:37:16] Localfile producing DAG in tml_read_LOCALFILE_step_3_kafka_producetotopic_dag-mysecondTMLsolutionproject-389d.py
 [INFO 2024-11-07_02:37:23] Preprocessing DAG in tml_system_step_4_kafka_preprocess_dag-mysecondTMLsolutionproject-389d.py
+[INFO 2024-11-07_02:37:28] Visualization DAG in tml_system_step_7_kafka_visualization_dag-mysecondTMLsolutionproject-389d.py
