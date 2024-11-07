@@ -8182,3 +8182,4 @@ origin	https://<personal access token hidden>@github.com/leandg5/raspberrypi.git
 [INFO 2024-11-07_02:37:23] Preprocessing DAG in tml_system_step_4_kafka_preprocess_dag-mysecondTMLsolutionproject-389d.py
 [INFO 2024-11-07_02:37:28] Visualization DAG in tml_system_step_7_kafka_visualization_dag-mysecondTMLsolutionproject-389d.py
 [INFO 2024-11-07_02:37:56] Docker DAG in tml_system_step_8_deploy_solution_to_docker_dag-mysecondTMLsolutionproject-389d.py
+[INFO 2024-11-07_02:39:04] {'name': ['Project with slug "mysecondtmlsolutionproject-389d" already exists.']}
