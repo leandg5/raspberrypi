@@ -8170,3 +8170,4 @@ origin	https://<personal access token hidden>@github.com/leandg5/raspberrypi.git
 [INFO 2024-11-07_01:40:51] Localfile producing DAG in tml_read_LOCALFILE_step_3_kafka_producetotopic_dag-mysecondTMLsolutionproject-389d.py
 [INFO 2024-11-07_01:41:06] Preprocessing DAG in tml_system_step_4_kafka_preprocess_dag-mysecondTMLsolutionproject-389d.py
 [INFO 2024-11-07_01:41:15] Visualization DAG in tml_system_step_7_kafka_visualization_dag-mysecondTMLsolutionproject-389d.py
+[INFO 2024-11-07_01:41:56] Docker DAG in tml_system_step_8_deploy_solution_to_docker_dag-mysecondTMLsolutionproject-389d.py
