@@ -8237,3 +8237,4 @@ Already up to date.
 [INFO 2024-11-26_17:32:33] TML Solution Studio: git add . Status: 
 [INFO 2024-11-26_17:32:33] TML Solution Studio: git commit -a Status for project myfinalcybersecurityproject-389d: fatal: paths 'project ...' with -a does not make sense
 [INFO 2024-11-26_17:32:34] TML Solution Studio: git push Status for project myfinalcybersecurityproject-389d: Everything up-to-date
+[INFO 2024-11-26_17:37:01] Deleting topic iot-raw-data in tml_system_step_2_kafka_createtopic_dag-myfinalcybersecurityproject-389d.py
