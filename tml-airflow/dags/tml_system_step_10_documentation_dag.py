@@ -68,9 +68,11 @@ def updatebranch(sname,branch):
             headers=HEADERS,
         )
     
+    
 def doparse(fname,farr):
       data = ''
-      with open(fname, 'r', encoding='utf-8') as file: 
+      try:  
+       with open(fname, 'r', encoding='utf-8') as file: 
         data = file.readlines() 
         r=0
         for d in data:        
@@ -79,11 +81,19 @@ def doparse(fname,farr):
                 if fs[0] in d:
                     data[r] = d.replace(fs[0],fs[1])
             r += 1  
-      with open(fname, 'w', encoding='utf-8') as file: 
+       with open(fname, 'w', encoding='utf-8') as file: 
         file.writelines(data)
+      except Exception as e:
+         pass
     
 def generatedoc(**context):    
-    
+    istss1=1
+    if 'TSS' in os.environ:
+      if os.environ['TSS'] == "1":
+        istss1=1
+      else:
+        istss1=0
+       
     if 'tssdoc' in os.environ:
         if os.environ['tssdoc']=="1":
             return
@@ -209,7 +219,8 @@ def generatedoc(**context):
     doparse("/{}/docs/source/index.rst".format(sname), ["--datetime--;{}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))])
     doparse("/{}/docs/source/operating.rst".format(sname), ["--datetime--;{}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))])
     doparse("/{}/docs/source/logs.rst".format(sname), ["--datetime--;{}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))])
-    
+    doparse("/{}/docs/source/kube.rst".format(sname), ["--datetime--;{}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))])
+
     if len(CLIENTPORT) > 1:
       doparse("/{}/docs/source/details.rst".format(sname), ["--CLIENTPORT--;{}".format(CLIENTPORT[1:])])
       doparse("/{}/docs/source/details.rst".format(sname), ["--TSSCLIENTPORT--;{}".format(TSSCLIENTPORT[1:])])
@@ -399,9 +410,16 @@ def generatedoc(**context):
     doparse("/{}/docs/source/operating.rst".format(sname), ["--tsscontainer--;maadsdocker/tml-solution-studio-with-airflow-{}".format(chip)])
     
     doparse("/{}/docs/source/operating.rst".format(sname), ["--chip--;{}".format(chipmain)])
-    doparse("/{}/docs/source/operating.rst".format(sname), ["--solutionairflowport--;{}".format(solutionairflowport[1:])])
+    if istss1==0:
+      doparse("/{}/docs/source/operating.rst".format(sname), ["--solutionairflowport--;{}".format(solutionairflowport[1:])])
+    else:
+      doparse("/{}/docs/source/operating.rst".format(sname), ["--solutionairflowport--;{}".format("TBD")])
+     
     doparse("/{}/docs/source/operating.rst".format(sname), ["--externalport--;{}".format(externalport[1:])])
-    doparse("/{}/docs/source/operating.rst".format(sname), ["--solutionexternalport--;{}".format(solutionexternalport[1:])])
+    if istss1==0:
+      doparse("/{}/docs/source/operating.rst".format(sname), ["--solutionexternalport--;{}".format(solutionexternalport[1:])])
+    else: 
+      doparse("/{}/docs/source/operating.rst".format(sname), ["--solutionexternalport--;{}".format("TBD")])
     
     pconsumefrom = context['ti'].xcom_pull(task_ids='step_9_solution_task_ai',key="{}_consumefrom".format(sname))
     pgpt_data_topic = context['ti'].xcom_pull(task_ids='step_9_solution_task_ai',key="{}_pgpt_data_topic".format(sname))
@@ -425,41 +443,63 @@ def generatedoc(**context):
           
     if len(CLIENTPORT) > 1:
       doparse("/{}/docs/source/operating.rst".format(sname), ["--clientport--;{}".format(TMLCLIENTPORT[1:])])
-      dockerrun = ("docker run -d -p {}:{} -p {}:{} -p {}:{} -p {}:{} \-\-env TSS=0 \-\-env SOLUTIONNAME={} \-\-env SOLUTIONDAG={} \-\-env GITUSERNAME={} " \
-                 " \-\-env GITREPOURL={} \-\-env SOLUTIONEXTERNALPORT={} " \
-                 " \-\-env CHIP={} \-\-env SOLUTIONAIRFLOWPORT={} " \
-                 " \-\-env SOLUTIONVIPERVIZPORT={} \-\-env DOCKERUSERNAME='{}' \-\-env CLIENTPORT={} " \
-                 " \-\-env EXTERNALPORT={} \-\-env KAFKACLOUDUSERNAME='{}' " \
-                 " \-\-env VIPERVIZPORT={} \-\-env MQTTUSERNAME='{}'" \
-                 " \-\-env AIRFLOWPORT={} " \
-                 " \-\-env GITPASSWORD='<Enter Github Password>' " \
-                 " \-\-env KAFKACLOUDPASSWORD='<Enter API secret>' " \
-                 " \-\-env MQTTPASSWORD='<Enter mqtt password>' " \
-                 " \-\-env READTHEDOCS='<Enter Readthedocs token>' " \
-                 " {}".format(solutionexternalport[1:],solutionexternalport[1:],
+      dockerrun = """docker run -d -p {}:{} -p {}:{} -p {}:{} -p {}:{} \\
+          --env TSS=0 \\
+          --env SOLUTIONNAME={} \\
+          --env SOLUTIONDAG={} \\
+          --env GITUSERNAME={} \\
+          --env GITREPOURL={} \\
+          --env SOLUTIONEXTERNALPORT={} \\
+          -v /var/run/docker.sock:/var/run/docker.sock:z  \\
+          --env CHIP={} \\
+          --env SOLUTIONAIRFLOWPORT={}  \\
+          --env SOLUTIONVIPERVIZPORT={} \\
+          --env DOCKERUSERNAME='{}' \\
+          --env CLIENTPORT={}  \\
+          --env EXTERNALPORT={} \\
+          --env KAFKACLOUDUSERNAME='{}' \\
+          --env VIPERVIZPORT={} \\
+          --env MQTTUSERNAME='{}' \\
+          --env AIRFLOWPORT={}  \\
+          --env GITPASSWORD='<Enter Github Password>' \\
+          --env KAFKACLOUDPASSWORD='<Enter API secret>' \\
+          --env MQTTPASSWORD='<Enter mqtt password>' \\
+          --env READTHEDOCS='<Enter Readthedocs token>' \\
+          {}""".format(solutionexternalport[1:],solutionexternalport[1:],
                           solutionairflowport[1:],solutionairflowport[1:],solutionvipervizport[1:],solutionvipervizport[1:],
                           TMLCLIENTPORT[1:],TMLCLIENTPORT[1:],sname,sd,os.environ['GITUSERNAME'],
                           os.environ['GITREPOURL'],solutionexternalport[1:],chipmain,
                           solutionairflowport[1:],solutionvipervizport[1:],os.environ['DOCKERUSERNAME'],TMLCLIENTPORT[1:],
-                          externalport[1:],kafkacloudusername,vipervizport[1:],mqttusername,airflowport[1:],containername))       
+                          externalport[1:],kafkacloudusername,vipervizport[1:],mqttusername,airflowport[1:],containername)       
     else:
       doparse("/{}/docs/source/operating.rst".format(sname), ["--clientport--;Not Applicable"])
-      dockerrun = ("docker run -d -p {}:{} -p {}:{} -p {}:{} \-\-env TSS=0 \-\-env SOLUTIONNAME={} \-\-env SOLUTIONDAG={} \-\-env GITUSERNAME={} " \
-                 " \-\-env GITREPOURL={} \-\-env SOLUTIONEXTERNALPORT={} " \
-                 " \-\-env CHIP={} \-\-env SOLUTIONAIRFLOWPORT={} " \
-                 " \-\-env SOLUTIONVIPERVIZPORT={} \-\-env DOCKERUSERNAME='{}' " \
-                 " \-\-env EXTERNALPORT={} \-\-env KAFKACLOUDUSERNAME='{}' " \
-                 " \-\-env VIPERVIZPORT={} \-\-env MQTTUSERNAME='{}' \-\-env AIRFLOWPORT={} " \
-                 " \-\-env MQTTPASSWORD='<Enter mqtt password>' " \
-                 " \-\-env KAFKACLOUDPASSWORD='<Enter API secret>' " \
-                 " \-\-env GITPASSWORD='<Enter Github Password>' " \
-                 " \-\-env READTHEDOCS='<Enter Readthedocs token>' " \
-                 " {}".format(solutionexternalport[1:],solutionexternalport[1:],
+      dockerrun = """docker run -d -p {}:{} -p {}:{} -p {}:{} \\
+          --env TSS=0 \\
+          --env SOLUTIONNAME={} \\
+          --env SOLUTIONDAG={} \\
+          --env GITUSERNAME={}  \\
+          --env GITREPOURL={} \\
+          --env SOLUTIONEXTERNALPORT={} \\
+          -v /var/run/docker.sock:/var/run/docker.sock:z \\
+          --env CHIP={} \\
+          --env SOLUTIONAIRFLOWPORT={} \\
+          --env SOLUTIONVIPERVIZPORT={} \\
+          --env DOCKERUSERNAME='{}' \\
+          --env EXTERNALPORT={} \\
+          --env KAFKACLOUDUSERNAME='{}' \\
+          --env VIPERVIZPORT={} \\
+          --env MQTTUSERNAME='{}' \\
+          --env AIRFLOWPORT={} \\
+          --env MQTTPASSWORD='<Enter mqtt password>' \\
+          --env KAFKACLOUDPASSWORD='<Enter API secret>' \\
+          --env GITPASSWORD='<Enter Github Password>' \\
+          --env READTHEDOCS='<Enter Readthedocs token>' \\
+          {}""".format(solutionexternalport[1:],solutionexternalport[1:],
                           solutionairflowport[1:],solutionairflowport[1:],solutionvipervizport[1:],solutionvipervizport[1:],
                           sname,sd,os.environ['GITUSERNAME'],
                           os.environ['GITREPOURL'],solutionexternalport[1:],chipmain,
                           solutionairflowport[1:],solutionvipervizport[1:],os.environ['DOCKERUSERNAME'],
-                          externalport[1:],kafkacloudusername,vipervizport[1:],mqttusername,airflowport[1:],containername))       
+                          externalport[1:],kafkacloudusername,vipervizport[1:],mqttusername,airflowport[1:],containername)
         
    # dockerrun = re.escape(dockerrun) 
     v=subprocess.call(["sed", "-i", "-e",  "s/--dockerrun--/{}/g".format(dockerrun), "/{}/docs/source/operating.rst".format(sname)])
@@ -493,7 +533,7 @@ def generatedoc(**context):
         doparse("/{}/docs/source/details.rst".format(sname), ["--pgpthost--;{}".format(pgpthost)])
         doparse("/{}/docs/source/details.rst".format(sname), ["--pgptport--;{}".format(pgptport[1:])])
         doparse("/{}/docs/source/details.rst".format(sname), ["--keyprocesstype--;{}".format(pprocesstype)])
-        doparse("/{}/docs/source/details.rst".format(sname), ["--hyperbatch--;{}".format(hyperbatch)])
+        doparse("/{}/docs/source/details.rst".format(sname), ["--hyperbatch--;{}".format(hyperbatch[1:])])
     
     
     rbuf = "https://{}.readthedocs.io".format(sname)
@@ -502,7 +542,10 @@ def generatedoc(**context):
     ############# VIZ URLS
     
     vizurl = "http:\/\/localhost:{}\/{}?topic={}\&offset={}\&groupid=\&rollbackoffset={}\&topictype=prediction\&append={}\&secure={}".format(solutionvipervizport[1:],dashboardhtml,topic,offset[1:],rollbackoffset[1:],append[1:],secure[1:])
-    subprocess.call(["sed", "-i", "-e",  "s/--visualizationurl--/{}/g".format(vizurl), "/{}/docs/source/operating.rst".format(sname)])
+    if istss1==0:
+      subprocess.call(["sed", "-i", "-e",  "s/--visualizationurl--/{}/g".format(vizurl), "/{}/docs/source/operating.rst".format(sname)])
+    else: 
+      subprocess.call(["sed", "-i", "-e",  "s/--visualizationurl--/{}/g".format("This will appear AFTER you run Your Solution Docker Container"), "/{}/docs/source/operating.rst".format(sname)])
 
     tssvizurl = "http:\/\/localhost:{}\/{}?topic={}\&offset={}\&groupid=\&rollbackoffset={}\&topictype=prediction\&append={}\&secure={}".format(vipervizport[1:],dashboardhtml,topic,offset[1:],rollbackoffset[1:],append[1:],secure[1:])
     subprocess.call(["sed", "-i", "-e",  "s/--tssvisualizationurl--/{}/g".format(tssvizurl), "/{}/docs/source/operating.rst".format(sname)])
@@ -511,8 +554,11 @@ def generatedoc(**context):
     subprocess.call(["sed", "-i", "-e",  "s/--tsslogfile--/{}/g".format(tsslogfile), "/{}/docs/source/operating.rst".format(sname)])
 
     solutionlogfile = "http:\/\/localhost:{}\/viperlogs.html?topic=viperlogs\&append=0".format(solutionvipervizport[1:])
-    subprocess.call(["sed", "-i", "-e",  "s/--solutionlogfile--/{}/g".format(solutionlogfile), "/{}/docs/source/operating.rst".format(sname)])
-       
+    if istss1==0:
+      subprocess.call(["sed", "-i", "-e",  "s/--solutionlogfile--/{}/g".format(solutionlogfile), "/{}/docs/source/operating.rst".format(sname)])
+    else:
+      subprocess.call(["sed", "-i", "-e",  "s/--solutionlogfile--/{}/g".format("This will appear AFTER you run Your Solution Docker Container"), "/{}/docs/source/operating.rst".format(sname)])
+     
     githublogs = "https:\/\/github.com\/{}\/{}\/blob\/main\/tml-airflow\/logs\/logs.txt".format(os.environ['GITUSERNAME'],repo)
     subprocess.call(["sed", "-i", "-e",  "s/--githublogs--/{}/g".format(githublogs), "/{}/docs/source/operating.rst".format(sname)])
     #-----------------------
@@ -539,7 +585,10 @@ def generatedoc(**context):
     doparse("/{}/docs/source/operating.rst".format(sname), ["--triggername--;{}".format(sd)])
     doparse("/{}/docs/source/operating.rst".format(sname), ["--airflowport--;{}".format(airflowport[1:])])
     doparse("/{}/docs/source/operating.rst".format(sname), ["--vipervizport--;{}".format(vipervizport[1:])])
-    doparse("/{}/docs/source/operating.rst".format(sname), ["--solutionvipervizport--;{}".format(solutionvipervizport[1:])])
+    if istss1==0:
+      doparse("/{}/docs/source/operating.rst".format(sname), ["--solutionvipervizport--;{}".format(solutionvipervizport[1:])])
+    else: 
+      doparse("/{}/docs/source/operating.rst".format(sname), ["--solutionvipervizport--;{}".format("TBD")])
 
     tssdockerrun = ("docker run -d \-\-net=host \-\-env AIRFLOWPORT={} " \
                     " -v <change to your local folder>:/dagslocalbackup:z " \
@@ -599,6 +648,24 @@ def generatedoc(**context):
  
     
     subprocess.call(["sed", "-i", "-e",  "s/--tmlbinaries--/{}/g".format(tmlbinaries), "/{}/docs/source/operating.rst".format(sname)])
+    ########################## Kubernetes
+   
+    doparse("/{}/docs/source/kube.rst".format(sname), ["--solutionnamefile--;{}.yml".format(sname)])
+    doparse("/{}/docs/source/kube.rst".format(sname), ["--solutionname--;{}".format(sname)])
+    if pgptcontainername == None:
+            kcmd = "kubectl apply -f mysql-storage.yml -f mysql-db-deployment.yml -f {}.yml".format(sname)
+            doparse("/{}/docs/source/kube.rst".format(sname), ["--kubectl--;{}".format(kcmd)])
+    else:
+            kcmd = "kubectl apply -f mysql-storage.yml -f mysql-db-deployment.yml -f qdrant.yml -f privategpt.yml -f {}.yml".format(sname)
+            doparse("/{}/docs/source/kube.rst".format(sname), ["--kubectl--;{}".format(kcmd)])
+    
+    kcmd2=tsslogging.genkubeyaml(sname,containername,TMLCLIENTPORT[1:],solutionairflowport[1:],solutionvipervizport[1:],solutionexternalport[1:],
+                       sd,os.environ['GITUSERNAME'],os.environ['GITREPOURL'],chipmain,os.environ['DOCKERUSERNAME'],
+                       externalport[1:],kafkacloudusername,mqttusername,airflowport[1:],vipervizport[1:])
+
+    doparse("/{}/docs/source/kube.rst".format(sname), ["--solutionnamecode--;{}".format(kcmd2)])
+        
+    ###########################
     try:
       tmuxwindows = "None"  
       with open("/tmux/pythonwindows_{}.txt".format(sname), 'r', encoding='utf-8') as file: 
