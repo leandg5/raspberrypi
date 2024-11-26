@@ -8239,3 +8239,4 @@ Already up to date.
 [INFO 2024-11-26_17:32:34] TML Solution Studio: git push Status for project myfinalcybersecurityproject-389d: Everything up-to-date
 [INFO 2024-11-26_17:37:01] Deleting topic iot-raw-data in tml_system_step_2_kafka_createtopic_dag-myfinalcybersecurityproject-389d.py
 [INFO 2024-11-26_17:37:05] Deleting topic iot-preprocess in tml_system_step_2_kafka_createtopic_dag-myfinalcybersecurityproject-389d.py
+[INFO 2024-11-26_17:37:09] Deleting topic iot-preprocess2 in tml_system_step_2_kafka_createtopic_dag-myfinalcybersecurityproject-389d.py
