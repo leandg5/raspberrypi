@@ -8248,3 +8248,4 @@ Already up to date.
 [INFO 2024-11-26_17:37:40] Preprocessing DAG in tml_system_step_4_kafka_preprocess_dag-myfinalcybersecurityproject-389d.py
 [INFO 2024-11-26_17:37:43] Visualization DAG in tml_system_step_7_kafka_visualization_dag-myfinalcybersecurityproject-389d.py
 [INFO 2024-11-26_17:37:57] PrivateGPT Step 9 DAG in tml_system_step_9_privategpt_qdrant_dag-myfinalcybersecurityproject-389d.py
+[INFO 2024-11-26_17:38:07] Docker DAG in tml_system_step_8_deploy_solution_to_docker_dag-myfinalcybersecurityproject-389d.py
