@@ -8370,3 +8370,4 @@ origin	https://<personal access token hidden>@github.com/leandg5/raspberrypi.git
 [INFO 2024-11-29_01:36:01] Deleting topic ml-data in tml_system_step_2_kafka_createtopic_dag-myfinalcybersecurityproject-389d.py
 [INFO 2024-11-29_01:36:04] Deleting topic prediction-data in tml_system_step_2_kafka_createtopic_dag-myfinalcybersecurityproject-389d.py
 [INFO 2024-11-29_01:36:08] Deleting topic cisco-network-privategpt in tml_system_step_2_kafka_createtopic_dag-myfinalcybersecurityproject-389d.py
+[INFO 2024-11-29_01:36:22] MQTT producing DAG in tml_read_MQTT_step_3_kafka_producetotopic_dag-myfinalcybersecurityproject-389d.py
