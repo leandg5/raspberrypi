@@ -8373,3 +8373,4 @@ origin	https://<personal access token hidden>@github.com/leandg5/raspberrypi.git
 [INFO 2024-11-29_01:36:22] MQTT producing DAG in tml_read_MQTT_step_3_kafka_producetotopic_dag-myfinalcybersecurityproject-389d.py
 [INFO 2024-11-29_01:36:27] Preprocessing DAG in tml_system_step_4_kafka_preprocess_dag-myfinalcybersecurityproject-389d.py
 [INFO 2024-11-29_01:36:30] Visualization DAG in tml_system_step_7_kafka_visualization_dag-myfinalcybersecurityproject-389d.py
+[INFO 2024-11-29_01:36:44] PrivateGPT Step 9 DAG in tml_system_step_9_privategpt_qdrant_dag-myfinalcybersecurityproject-389d.py
