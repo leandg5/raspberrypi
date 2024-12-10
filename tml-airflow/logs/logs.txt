@@ -8412,3 +8412,4 @@ origin	https://<personal access token hidden>@github.com/leandg5/raspberrypi.git
 [INFO 2024-12-10_03:14:03] Preprocessing DAG in tml_system_step_4_kafka_preprocess_dag-myfinalcybersecurityproject-389d.py
 [INFO 2024-12-10_03:14:11] Visualization DAG in tml_system_step_7_kafka_visualization_dag-myfinalcybersecurityproject-389d.py
 [INFO 2024-12-10_03:14:34] PrivateGPT Step 9 DAG in tml_system_step_9_privategpt_qdrant_dag-myfinalcybersecurityproject-389d.py
+[INFO 2024-12-10_03:15:01] Docker DAG in tml_system_step_8_deploy_solution_to_docker_dag-myfinalcybersecurityproject-389d.py
