@@ -318,7 +318,10 @@ def startprivategpt(**context):
        ti.xcom_push(key="{}_pgpt_data_topic".format(sname), value=default_args['pgpt_data_topic'])
        ti.xcom_push(key="{}_pgptcontainername".format(sname), value=default_args['pgptcontainername'])
        ti.xcom_push(key="{}_offset".format(sname), value="_{}".format(default_args['offset']))
-       ti.xcom_push(key="{}_rollbackoffset".format(sname), value="_{}".format(default_args['rollbackoffset']))
+       if 'step9rollbackoffset' in os.environ:
+          ti.xcom_push(key="{}_rollbackoffset".format(sname), value="_{}".format(os.environ['step9rollbackoffset']))
+       else: 
+          ti.xcom_push(key="{}_rollbackoffset".format(sname), value="_{}".format(default_args['rollbackoffset']))
 
        ti.xcom_push(key="{}_topicid".format(sname), value="_{}".format(default_args['topicid']))
        ti.xcom_push(key="{}_enabletls".format(sname), value="_{}".format(default_args['enabletls']))
@@ -425,4 +428,4 @@ if __name__ == '__main__':
           tsslogging.locallogs("ERROR", "STEP 9: PrivateGPT Step 9 DAG in {} {}".format(os.path.basename(__file__),e))
           tsslogging.tsslogit("PrivateGPT Step 9 DAG in {} {}".format(os.path.basename(__file__),e), "ERROR" )
           tsslogging.git_push("/{}".format(repo),"Entry from {}".format(os.path.basename(__file__)),"origin")
-          break
+          time.sleep(5)

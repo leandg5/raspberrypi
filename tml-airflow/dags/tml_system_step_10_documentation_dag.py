@@ -102,7 +102,11 @@ def generatedoc(**context):
     sd = context['dag'].dag_id
     sname=context['ti'].xcom_pull(task_ids='step_1_solution_task_getparams',key="{}_solutionname".format(sd))
 
-    
+    kube=0
+    if "KUBE" in os.environ:
+          if os.environ["KUBE"] == "1":
+             kube=1
+           
     producinghost = context['ti'].xcom_pull(task_ids='step_1_solution_task_getparams',key="{}_VIPERHOSTPRODCE".format(sname))
     producingport = context['ti'].xcom_pull(task_ids='step_1_solution_task_getparams',key="{}_VIPERPORTPRODUCE".format(sname))
     preprocesshost = context['ti'].xcom_pull(task_ids='step_1_solution_task_getparams',key="{}_VIPERHOSTPREPROCESS".format(sname))
@@ -249,6 +253,7 @@ def generatedoc(**context):
     pathtotmlattrs = context['ti'].xcom_pull(task_ids='step_4_solution_task_preprocess',key="{}_pathtotmlattrs".format(sname))
     identifier = context['ti'].xcom_pull(task_ids='step_4_solution_task_preprocess',key="{}_identifier".format(sname))
     jsoncriteria = context['ti'].xcom_pull(task_ids='step_4_solution_task_preprocess',key="{}_jsoncriteria".format(sname))
+    maxrows4 = context['ti'].xcom_pull(task_ids='step_4_solution_task_preprocess',key="{}_maxrows".format(sname))
 
     if preprocess_data_topic:
         subprocess.call(["sed", "-i", "-e",  "s/--raw_data_topic--/{}/g".format(raw_data_topic), "/{}/docs/source/details.rst".format(sname)])
@@ -281,6 +286,7 @@ def generatedoc(**context):
     pathtotmlattrs = context['ti'].xcom_pull(task_ids='step_4b_solution_task_preprocess',key="{}_pathtotmlattrs".format(sname))
     identifier = context['ti'].xcom_pull(task_ids='step_4b_solution_task_preprocess',key="{}_identifier".format(sname))
     jsoncriteria = context['ti'].xcom_pull(task_ids='step_4b_solution_task_preprocess',key="{}_jsoncriteria".format(sname))
+    maxrows4b = context['ti'].xcom_pull(task_ids='step_4b_solution_task_preprocess',key="{}_maxrows".format(sname))
 
     if preprocess_data_topic:
         subprocess.call(["sed", "-i", "-e",  "s/--raw_data_topic2--/{}/g".format(raw_data_topic), "/{}/docs/source/details.rst".format(sname)])
@@ -506,7 +512,7 @@ def generatedoc(**context):
     
     doparse("/{}/docs/source/operating.rst".format(sname), ["--dockerrun--;{}".format(dockerrun),"--dockercontainer--;{} ({})".format(containername, hurl)])
     doparse("/{}/docs/source/details.rst".format(sname), ["--dockerrun--;{}".format(dockerrun),"--dockercontainer--;{} ({})".format(containername, hurl)])
-    
+    step9rollbackoffset=-1
     if pgptcontainername != None:
         privategptrun = "docker run -d -p {}:{} --net=host --gpus all --env PORT={} --env GPU=1 --env COLLECTION={} --env WEB_CONCURRENCY={} --env CUDA_VISIBLE_DEVICES={} {}".format(pgptport[1:],pgptport[1:],pgptport[1:],pcollection,pconcurrency[1:],pcuda[1:],pgptcontainername)
 
@@ -521,6 +527,7 @@ def generatedoc(**context):
         doparse("/{}/docs/source/details.rst".format(sname), ["--vectordbcollectionname--;{}".format(pcollection)])
         doparse("/{}/docs/source/details.rst".format(sname), ["--offset--;{}".format(poffset[1:])])
         doparse("/{}/docs/source/details.rst".format(sname), ["--rollbackoffset--;{}".format(prollbackoffset[1:])])
+        step9rollbackoffset=prollbackoffset[1:]
         doparse("/{}/docs/source/details.rst".format(sname), ["--topicid--;{}".format(ptopicid[1:])])
         doparse("/{}/docs/source/details.rst".format(sname), ["--enabletls--;{}".format(penabletls[1:])])
         doparse("/{}/docs/source/details.rst".format(sname), ["--partition--;{}".format(ppartition[1:])])
@@ -530,7 +537,11 @@ def generatedoc(**context):
         doparse("/{}/docs/source/details.rst".format(sname), ["--keyattribute--;{}".format(pkeyattribute)])
         doparse("/{}/docs/source/details.rst".format(sname), ["--concurrency--;{}".format(pconcurrency[1:])])
         doparse("/{}/docs/source/details.rst".format(sname), ["--cuda--;{}".format(pcuda[1:])])
-        doparse("/{}/docs/source/details.rst".format(sname), ["--pgpthost--;{}".format(pgpthost)])
+        if kube == 1:
+            doparse("/{}/docs/source/details.rst".format(sname), ["--pgpthost--;{}".format('privategpt-service')])
+        else:   
+            doparse("/{}/docs/source/details.rst".format(sname), ["--pgpthost--;{}".format(pgpthost)])
+
         doparse("/{}/docs/source/details.rst".format(sname), ["--pgptport--;{}".format(pgptport[1:])])
         doparse("/{}/docs/source/details.rst".format(sname), ["--keyprocesstype--;{}".format(pprocesstype)])
         doparse("/{}/docs/source/details.rst".format(sname), ["--hyperbatch--;{}".format(hyperbatch[1:])])
@@ -542,6 +553,8 @@ def generatedoc(**context):
     ############# VIZ URLS
     
     vizurl = "http:\/\/localhost:{}\/{}?topic={}\&offset={}\&groupid=\&rollbackoffset={}\&topictype=prediction\&append={}\&secure={}".format(solutionvipervizport[1:],dashboardhtml,topic,offset[1:],rollbackoffset[1:],append[1:],secure[1:])
+    vizurlkube = "http://localhost:{}/{}?topic={}&offset={}&groupid=&rollbackoffset={}&topictype=prediction&append={}&secure={}".format(solutionvipervizport[1:],dashboardhtml,topic,offset[1:],rollbackoffset[1:],append[1:],secure[1:])
+
     if istss1==0:
       subprocess.call(["sed", "-i", "-e",  "s/--visualizationurl--/{}/g".format(vizurl), "/{}/docs/source/operating.rst".format(sname)])
     else: 
@@ -653,17 +666,59 @@ def generatedoc(**context):
     doparse("/{}/docs/source/kube.rst".format(sname), ["--solutionnamefile--;{}.yml".format(sname)])
     doparse("/{}/docs/source/kube.rst".format(sname), ["--solutionname--;{}".format(sname)])
     if pgptcontainername == None:
-            kcmd = "kubectl apply -f mysql-storage.yml -f mysql-db-deployment.yml -f {}.yml".format(sname)
+            if '127.0.0.1' in brokerhost:
+              kcmd = "kubectl apply -f kafka.yml -f secrets.yml -f mysql-storage.yml -f mysql-db-deployment.yml -f {}.yml".format(sname)
+            else: 
+              kcmd = "kubectl apply -f secrets.yml -f mysql-storage.yml -f mysql-db-deployment.yml -f {}.yml".format(sname)
+
             doparse("/{}/docs/source/kube.rst".format(sname), ["--kubectl--;{}".format(kcmd)])
     else:
-            kcmd = "kubectl apply -f mysql-storage.yml -f mysql-db-deployment.yml -f qdrant.yml -f privategpt.yml -f {}.yml".format(sname)
+            if '127.0.0.1' in brokerhost:            
+              kcmd = "kubectl apply -f kafka.yml -f secrets.yml -f mysql-storage.yml -f mysql-db-deployment.yml -f qdrant.yml -f privategpt.yml -f {}.yml".format(sname)
+            else:
+              kcmd = "kubectl apply -f secrets.yml -f mysql-storage.yml -f mysql-db-deployment.yml -f qdrant.yml -f privategpt.yml -f {}.yml".format(sname)
+             
             doparse("/{}/docs/source/kube.rst".format(sname), ["--kubectl--;{}".format(kcmd)])
-    
+    if maxrows4:
+      step4maxrows=maxrows4[1:]
+    else:
+      step4maxrows=-1
+
+    if maxrows4b: 
+      step4bmaxrows=maxrows4b[1:]
+    else: 
+      step4bmaxrows=-1 
+
+    if rollbackoffsets:
+      step5rollbackoffsets=rollbackoffsets[1:]
+    else:
+      step5rollbackoffsets=-1
+
+    if maxrows:
+      step6maxrows=maxrows[1:]
+    else:
+      step6maxrows=-1
+
+    kubebroker='kafka-service:9092' 
+    if 'KUBEBROKERHOST' in os.environ:
+       kubebroker = os.environ['KUBEBROKERHOST']
+    kafkabroker='127.0.0.1:9092' 
+    if 'KAFKABROKERHOST' in os.environ:
+       kafkabroker = os.environ['KAFKABROKERHOST']
+     
+    step1solutiontitle=stitle
+    step1description=sdesc
+
     kcmd2=tsslogging.genkubeyaml(sname,containername,TMLCLIENTPORT[1:],solutionairflowport[1:],solutionvipervizport[1:],solutionexternalport[1:],
                        sd,os.environ['GITUSERNAME'],os.environ['GITREPOURL'],chipmain,os.environ['DOCKERUSERNAME'],
-                       externalport[1:],kafkacloudusername,mqttusername,airflowport[1:],vipervizport[1:])
+                       externalport[1:],kafkacloudusername,mqttusername,airflowport[1:],vipervizport[1:],
+                       step4maxrows,step4bmaxrows,step5rollbackoffsets,step6maxrows,step1solutiontitle,step1description,step9rollbackoffset,kubebroker,kafkabroker)
 
     doparse("/{}/docs/source/kube.rst".format(sname), ["--solutionnamecode--;{}".format(kcmd2)])
+
+    kpfwd="kubectl port-forward deployment/{} {}:{}".format(sname,solutionvipervizport[1:],solutionvipervizport[1:])
+    doparse("/{}/docs/source/kube.rst".format(sname), ["--kube-portforward--;{}".format(kpfwd)])
+    doparse("/{}/docs/source/kube.rst".format(sname), ["--visualizationurl--;{}".format(vizurlkube)])
         
     ###########################
     try:
@@ -686,8 +741,14 @@ def generatedoc(**context):
      if os.environ['TSS'] == "1":
       doparse("/{}/docs/source/operating.rst".format(sname), ["--tssgen--;TSS Development Environment Container"])
      else:
-      doparse("/{}/docs/source/operating.rst".format(sname), ["--tssgen--;TML Solution Container"])
-    
+       if "KUBE" not in os.environ:
+         doparse("/{}/docs/source/operating.rst".format(sname), ["--tssgen--;TML Solution Container"])
+       else:
+         if os.environ["KUBE"] == "0":
+           doparse("/{}/docs/source/operating.rst".format(sname), ["--tssgen--;TML Solution Container"])
+         else: 
+           doparse("/{}/docs/source/operating.rst".format(sname), ["--tssgen--;TML Solution Container (RUNNING IN KUBERNETES)"])
+           
     # Kick off shell script 
     #tsslogging.git_push("/{}".format(sname),"For solution details GOTO: https://{}.readthedocs.io".format(sname),sname)
     
